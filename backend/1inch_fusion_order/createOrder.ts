@@ -8,14 +8,41 @@ import {
 } from "@1inch/cross-chain-sdk";
 import Web3 from "web3";
 import { randomBytes } from "node:crypto";
+import dotenv from "dotenv";
 
-const privateKey = process.env.PRIVATE_KEY!;
+dotenv.config();
+
+// Validate environment variables
+const privateKey = process.env.PRIVATE_KEY;
+const authKey = process.env.FUSION_AUTH_KEY;
+
+if (!privateKey) {
+  throw new Error("PRIVATE_KEY environment variable is required");
+}
+
+if (!authKey) {
+  throw new Error("FUSION_AUTH_KEY environment variable is required");
+}
+
+// Validate private key format
+if (!privateKey.startsWith("0x") || privateKey.length !== 66) {
+  throw new Error(
+    "PRIVATE_KEY must be a valid 32-byte hex string starting with '0x' (64 hex characters + '0x' prefix)"
+  );
+}
+
 const rpc = "https://ethereum-rpc.publicnode.com";
-const authKey = process.env.FUSION_AUTH_KEY!;
-const source = "stables-check";
+const source = "stablescenter";
 
 const web3 = new Web3(rpc);
-const walletAddress = web3.eth.accounts.privateKeyToAccount(privateKey).address;
+
+// Validate private key by trying to create an account
+let walletAddress: string;
+try {
+  walletAddress = web3.eth.accounts.privateKeyToAccount(privateKey).address;
+} catch (error) {
+  throw new Error(`Invalid PRIVATE_KEY: ${(error as Error).message}`);
+}
 
 const sdk = new SDK({
   url: "https://api.1inch.dev/fusion-plus",
@@ -27,50 +54,113 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Default token addresses for Ethereum to NEAR swaps
+// Chain IDs
+const CHAIN_IDS = {
+  ETHEREUM: NetworkEnum.ETHEREUM,
+  SOLANA: NetworkEnum.SOLANA,
+  BASE: NetworkEnum.COINBASE,
+  AVALANCHE: NetworkEnum.AVALANCHE,
+  BSC: NetworkEnum.BINANCE,
+};
+
+// Default token addresses for different chains
 const DEFAULT_TOKENS = {
-  ETHEREUM: {
-    USDC: "0xA0b86a33E6441b8C4C8C8C8C8C8C8C8C8C8C8C8C", // USDC on Ethereum
+  [CHAIN_IDS.ETHEREUM]: {
+    USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC on Ethereum
     USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT on Ethereum
     WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH on Ethereum
   },
-  NEAR: {
-    USDC: "0x0000000000000000000000000000000000000000000000000000000000000000", // USDC on NEAR
-    USDT: "0x0000000000000000000000000000000000000000000000000000000000000000", // USDT on NEAR
-    WNEAR: "0x0000000000000000000000000000000000000000000000000000000000000000", // WNEAR on NEAR
+  [CHAIN_IDS.SOLANA]: {
+    USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC on Solana
+    USDT: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT on Solana
   },
-};
-
-// Chain IDs
-const CHAIN_IDS = {
-  ETHEREUM: NetworkEnum.ETHEREUM, // 1
-  NEAR: 1313161554, // NEAR mainnet chain ID
+  [CHAIN_IDS.BASE]: {
+    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC on Base
+    USDT: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", // USDT on Base
+    WETH: "0x4200000000000000000000000000000000000006", // WETH on Base
+  },
+  [CHAIN_IDS.AVALANCHE]: {
+    USDC: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E", // USDC on Avalanche
+    USDT: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7", // USDT on Avalanche
+    WAVAX: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", // Wrapped AVAX
+  },
+  [CHAIN_IDS.BSC]: {
+    USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // USDC on BSC
+    USDT: "0x55d398326f99059fF775485246999027B3197955", // USDT on BSC
+    WBNB: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", // WBNB on BSC
+  },
 };
 
 export async function createFusionOrder({
   amount,
-  srcChainId = CHAIN_IDS.ETHEREUM,
-  dstChainId = CHAIN_IDS.NEAR,
+  srcChainId,
+  dstChainId,
   srcTokenAddress,
   dstTokenAddress,
   simulate = false,
 }: {
   amount: string;
-  srcChainId?: number;
-  dstChainId?: number;
+  srcChainId: number;
+  dstChainId: number;
   srcTokenAddress?: string;
   dstTokenAddress?: string;
   simulate?: boolean;
 }) {
   try {
-    // Use default tokens if not provided
-    const finalSrcToken = srcTokenAddress || DEFAULT_TOKENS.ETHEREUM.USDC;
-    const finalDstToken = dstTokenAddress || DEFAULT_TOKENS.NEAR.USDC;
+    // Validate chain IDs
+    if (!srcChainId || !dstChainId) {
+      throw new Error("Source and destination chain IDs are required");
+    }
+
+    if (srcChainId === dstChainId) {
+      throw new Error(
+        "Source and destination chain IDs must be different for cross-chain swaps"
+      );
+    }
+
+    // Use default tokens if not provided, based on the source chain
+    let finalSrcToken = srcTokenAddress;
+    let finalDstToken = dstTokenAddress;
+
+    // Helper function to get default token for a chain
+    const getDefaultTokenForChain = (
+      chainId: number,
+      tokenType: "USDC" | "USDT" | "WETH" | "WAVAX" = "USDC"
+    ) => {
+      const chainTokens =
+        DEFAULT_TOKENS[chainId as keyof typeof DEFAULT_TOKENS];
+      if (chainTokens && chainTokens[tokenType]) {
+        return chainTokens[tokenType];
+      }
+      return null;
+    };
+
+    if (!finalSrcToken) {
+      const defaultToken = getDefaultTokenForChain(srcChainId);
+      if (defaultToken) {
+        finalSrcToken = defaultToken;
+      } else {
+        throw new Error(
+          `Source token address is required for chain ID ${srcChainId}. No default token available.`
+        );
+      }
+    }
+
+    if (!finalDstToken) {
+      const defaultToken = getDefaultTokenForChain(dstChainId);
+      if (defaultToken) {
+        finalDstToken = defaultToken;
+      } else {
+        throw new Error(
+          `Destination token address is required for chain ID ${dstChainId}. No default token available.`
+        );
+      }
+    }
 
     console.log(
       `Creating ${
         simulate ? "simulated " : ""
-      }order from Ethereum (${srcChainId}) to NEAR (${dstChainId})`
+      }cross-chain order from chain ${srcChainId} to chain ${dstChainId}`
     );
     console.log(`Source token: ${finalSrcToken}`);
     console.log(`Destination token: ${finalDstToken}`);
@@ -107,7 +197,7 @@ export async function createFusionOrder({
     }
 
     // Get quote
-    const quote = await sdk.getQuote({
+    const quotePayload = {
       amount,
       srcChainId,
       dstChainId,
@@ -115,7 +205,12 @@ export async function createFusionOrder({
       srcTokenAddress: finalSrcToken,
       dstTokenAddress: finalDstToken,
       walletAddress,
-    });
+    };
+
+    console.log("📤 Creating fusion order - Quote payload:");
+    console.log(JSON.stringify(quotePayload, null, 2));
+
+    const quote = await sdk.getQuote(quotePayload);
 
     const preset = PresetEnum.fast;
 
@@ -211,15 +306,15 @@ export async function monitorOrderStatus(
 
 export async function createCompleteFusionOrder({
   amount,
-  srcChainId = CHAIN_IDS.ETHEREUM,
-  dstChainId = CHAIN_IDS.NEAR,
+  srcChainId,
+  dstChainId,
   srcTokenAddress,
   dstTokenAddress,
   simulate = false,
 }: {
   amount: string;
-  srcChainId?: number;
-  dstChainId?: number;
+  srcChainId: number;
+  dstChainId: number;
   srcTokenAddress?: string;
   dstTokenAddress?: string;
   simulate?: boolean;
@@ -256,48 +351,4 @@ export async function createCompleteFusionOrder({
     console.error("Error in complete fusion order:", error);
     throw error;
   }
-}
-
-// Helper function to create Ethereum to NEAR swap specifically
-export async function createEthereumToNearSwap({
-  amount,
-  srcToken = DEFAULT_TOKENS.ETHEREUM.USDC,
-  dstToken = DEFAULT_TOKENS.NEAR.USDC,
-  simulate = false,
-}: {
-  amount: string;
-  srcToken?: string;
-  dstToken?: string;
-  simulate?: boolean;
-}) {
-  return createFusionOrder({
-    amount,
-    srcChainId: CHAIN_IDS.ETHEREUM,
-    dstChainId: CHAIN_IDS.NEAR,
-    srcTokenAddress: srcToken,
-    dstTokenAddress: dstToken,
-    simulate,
-  });
-}
-
-// Helper function to create complete Ethereum to NEAR swap with monitoring
-export async function createCompleteEthereumToNearSwap({
-  amount,
-  srcToken = DEFAULT_TOKENS.ETHEREUM.USDC,
-  dstToken = DEFAULT_TOKENS.NEAR.USDC,
-  simulate = false,
-}: {
-  amount: string;
-  srcToken?: string;
-  dstToken?: string;
-  simulate?: boolean;
-}) {
-  return createCompleteFusionOrder({
-    amount,
-    srcChainId: CHAIN_IDS.ETHEREUM,
-    dstChainId: CHAIN_IDS.NEAR,
-    srcTokenAddress: srcToken,
-    dstTokenAddress: dstToken,
-    simulate,
-  });
 }

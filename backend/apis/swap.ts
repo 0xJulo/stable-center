@@ -1,126 +1,10 @@
 import express from "express";
 import {
   createFusionOrder,
-  createEthereumToNearSwap,
   createCompleteFusionOrder,
-  createCompleteEthereumToNearSwap,
 } from "../1inch_fusion_order/createOrder";
 
 const router = express.Router();
-
-// Original deposit endpoint (maintained for backward compatibility)
-router.post("/deposit", async (req, res) => {
-  const { amount, srcToken, dstToken, srcChainId, dstChainId } = req.body;
-
-  try {
-    const result = await createFusionOrder({
-      amount,
-      srcTokenAddress: srcToken,
-      dstTokenAddress: dstToken,
-      srcChainId,
-      dstChainId,
-    });
-
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Error creating order:", err);
-    res.status(500).json({ error: (err as Error).message });
-  }
-});
-
-// New Ethereum to NEAR swap endpoint
-router.post("/ethereum-to-near", async (req, res) => {
-  const { amount, srcToken, dstToken, simulate = false } = req.body;
-
-  if (!amount) {
-    return res.status(400).json({ error: "Amount is required" });
-  }
-
-  try {
-    const result = await createEthereumToNearSwap({
-      amount,
-      srcToken,
-      dstToken,
-      simulate,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-      message: simulate
-        ? "Order simulated successfully"
-        : "Order created successfully",
-    });
-  } catch (err) {
-    console.error("Error creating Ethereum to NEAR swap:", err);
-    res.status(500).json({
-      success: false,
-      error: (err as Error).message,
-    });
-  }
-});
-
-// Complete Ethereum to NEAR swap with monitoring endpoint
-router.post("/ethereum-to-near/complete", async (req, res) => {
-  const { amount, srcToken, dstToken, simulate = false } = req.body;
-
-  if (!amount) {
-    return res.status(400).json({ error: "Amount is required" });
-  }
-
-  try {
-    const result = await createCompleteEthereumToNearSwap({
-      amount,
-      srcToken,
-      dstToken,
-      simulate,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-      message: simulate
-        ? "Order simulation completed"
-        : "Order completed successfully",
-    });
-  } catch (err) {
-    console.error("Error creating complete Ethereum to NEAR swap:", err);
-    res.status(500).json({
-      success: false,
-      error: (err as Error).message,
-    });
-  }
-});
-
-// Simulate Ethereum to NEAR swap endpoint
-router.post("/simulate/ethereum-to-near", async (req, res) => {
-  const { amount, srcToken, dstToken } = req.body;
-
-  if (!amount) {
-    return res.status(400).json({ error: "Amount is required" });
-  }
-
-  try {
-    const result = await createEthereumToNearSwap({
-      amount,
-      srcToken,
-      dstToken,
-      simulate: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-      message: "Order simulation completed",
-    });
-  } catch (err) {
-    console.error("Error simulating Ethereum to NEAR swap:", err);
-    res.status(500).json({
-      success: false,
-      error: (err as Error).message,
-    });
-  }
-});
 
 // Generic cross-chain swap endpoint with simulation support
 router.post("/cross-chain", async (req, res) => {
@@ -135,6 +19,12 @@ router.post("/cross-chain", async (req, res) => {
 
   if (!amount) {
     return res.status(400).json({ error: "Amount is required" });
+  }
+
+  if (!srcChainId || !dstChainId) {
+    return res
+      .status(400)
+      .json({ error: "Source and destination chain IDs are required" });
   }
 
   try {
@@ -178,6 +68,12 @@ router.post("/cross-chain/complete", async (req, res) => {
     return res.status(400).json({ error: "Amount is required" });
   }
 
+  if (!srcChainId || !dstChainId) {
+    return res
+      .status(400)
+      .json({ error: "Source and destination chain IDs are required" });
+  }
+
   try {
     const result = await createCompleteFusionOrder({
       amount,
@@ -200,6 +96,68 @@ router.post("/cross-chain/complete", async (req, res) => {
     res.status(500).json({
       success: false,
       error: (err as Error).message,
+    });
+  }
+});
+
+// Get quote for cross-chain swap
+router.get("/quote", async (req, res) => {
+  const { amount, srcToken, dstToken, srcChainId, dstChainId } = req.query;
+
+  console.log("🔍 Quote request received:");
+  console.log("Query params:", {
+    amount,
+    srcToken,
+    dstToken,
+    srcChainId,
+    dstChainId,
+  });
+
+  if (!amount || !srcChainId || !dstChainId) {
+    return res.status(400).json({
+      error: "Amount, source chain ID, and destination chain ID are required",
+    });
+  }
+
+  try {
+    // Use the existing createFusionOrder function with simulate=true to get a quote
+    const { createFusionOrder } = await import(
+      "../1inch_fusion_order/createOrder"
+    );
+
+    const result = await createFusionOrder({
+      amount: amount as string,
+      srcChainId: Number(srcChainId),
+      dstChainId: Number(dstChainId),
+      srcTokenAddress: srcToken as string,
+      dstTokenAddress: dstToken as string,
+      simulate: true,
+    });
+
+    console.log("✅ Quote received successfully");
+    console.log("Quote data:", JSON.stringify(result, null, 2));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        quote: result.quote,
+        srcChainId: Number(srcChainId),
+        dstChainId: Number(dstChainId),
+        srcTokenAddress: srcToken as string,
+        dstTokenAddress: dstToken as string,
+        amount: amount as string,
+      },
+      message: "Quote retrieved successfully",
+    });
+  } catch (err: any) {
+    console.error("❌ Error getting quote:");
+    console.error("Error details:", err);
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+
+    res.status(500).json({
+      success: false,
+      error: err.message,
     });
   }
 });
