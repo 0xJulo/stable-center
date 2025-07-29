@@ -2,6 +2,16 @@
 
 The StableCenter application is designed to make investing in stablecoin DeFi protocols straightforward for new and everyday crypto users. 
 
+**Problem Statement**
+
+TODO: Finish putting content in
+
+## Design
+
+This project has been designed with a combination of Figma for rough ideas, basic layouts, and type and colour variables, as well as being directly improved and built upon in the code itself.
+
+The Figma file containing mock ups and ideas can be found [here](https://www.figma.com/design/4tWJ2Lii0An49YPw2U9Wew/Unite-Defi--ETH-Global-?node-id=0-1&t=jNDP6wIM26SEUG9c-1).
+
 
 
 ## Main components
