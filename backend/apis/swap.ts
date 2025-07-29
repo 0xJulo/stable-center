@@ -75,16 +75,43 @@ router.post("/cross-chain/complete", async (req, res) => {
 
   try {
     const result = await createCompleteFusionOrder({
-      amount,
-      srcTokenAddress: srcToken,
-      dstTokenAddress: dstToken,
-      srcChainId,
-      dstChainId,
+      amount: amount as string,
+      srcChainId: Number(srcChainId),
+      dstChainId: Number(dstChainId),
+      srcTokenAddress: srcToken as string,
+      dstTokenAddress: dstToken as string,
     });
+
+    // Extract only the necessary data, converting BigInts to strings
+    const responseData = {
+      hash: result.hash,
+      status: result.status,
+      finalStatus: {
+        status: result.finalStatus.status,
+        orderHash: result.finalStatus.orderHash,
+        srcChainId: result.finalStatus.srcChainId,
+        dstChainId: result.finalStatus.dstChainId,
+        validation: result.finalStatus.validation,
+        remainingMakerAmount:
+          result.finalStatus.remainingMakerAmount?.toString() || "0",
+        deadline: result.finalStatus.deadline,
+        createdAt: result.finalStatus.createdAt,
+        cancelable: result.finalStatus.cancelable,
+        // Convert fills to safe format
+        fills:
+          result.finalStatus.fills?.map((fill: any) => ({
+            txHash: fill.txHash,
+            filledMakerAmount: fill.filledMakerAmount?.toString() || "0",
+            filledAuctionTakerAmount:
+              fill.filledAuctionTakerAmount?.toString() || "0",
+            status: fill.status,
+          })) || [],
+      },
+    };
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: responseData,
       message: simulate
         ? "Order simulation completed"
         : "Order completed successfully",

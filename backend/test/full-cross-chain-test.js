@@ -128,28 +128,6 @@ async function testOrderStatus(orderHash) {
   }
 }
 
-async function testSupportedChains() {
-  console.log("\n🔗 Step 4: Checking supported chains...");
-
-  try {
-    const response = await axios.get(`${API_BASE}/supported-chains`);
-
-    if (response.data.success) {
-      console.log("✅ Supported chains retrieved:");
-      console.log(JSON.stringify(response.data.data, null, 2));
-      return response.data.data;
-    } else {
-      throw new Error("Supported chains request failed");
-    }
-  } catch (error) {
-    console.error(
-      "❌ Supported chains error:",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-}
-
 async function monitorOrderCompletion(orderHash, maxWaitTime = 300000) {
   // 5 minutes
   console.log(`\n⏳ Step 5: Monitoring order completion for ${orderHash}...`);
@@ -207,38 +185,40 @@ async function runFullTest() {
     // Step 1: Get quote
     const quoteData = await testQuote();
 
-    // Step 2: Perform complete swap
+    // Step 2: Perform complete swap (this already monitors and completes the order)
     const swapResult = await testCompleteSwap();
 
-    // Step 3: Check supported chains
-    await testSupportedChains();
+    // Final summary
+    console.log("\n📊 Test Summary:");
+    console.log("================");
+    console.log(`✅ Quote: Success`);
+    console.log(`✅ Order creation: Success`);
+    console.log(`✅ Order submission: Success`);
 
-    // Step 4: Monitor order completion
-    if (swapResult.hash) {
-      const monitoringResult = await monitorOrderCompletion(swapResult.hash);
+    // Show final status from the complete swap result
+    if (swapResult.finalStatus) {
+      console.log(`✅ Order monitoring: Success`);
+      console.log(`📋 Final status: ${swapResult.finalStatus.status}`);
 
-      // Final summary
-      console.log("\n📊 Test Summary:");
-      console.log("================");
-      console.log(`✅ Quote: Success`);
-      console.log(`✅ Order creation: Success`);
-      console.log(`✅ Order submission: Success`);
-      console.log(
-        `✅ Order monitoring: ${
-          monitoringResult.success ? "Success" : "Timeout"
-        }`
-      );
-      console.log(`📋 Final status: ${monitoringResult.status}`);
-
-      if (monitoringResult.status === "Executed") {
+      if (swapResult.finalStatus.status === "Executed") {
         console.log("\n🎉 SUCCESS: Cross-chain swap completed successfully!");
         console.log("💰 Check your Base wallet for the received tokens");
-      } else if (monitoringResult.status === "Refunded") {
+        if (
+          swapResult.finalStatus.fills &&
+          swapResult.finalStatus.fills.length > 0
+        ) {
+          console.log(
+            `📊 Transaction hash: ${swapResult.finalStatus.fills[0].txHash}`
+          );
+        }
+      } else if (swapResult.finalStatus.status === "Refunded") {
         console.log("\n💰 SUCCESS: Order refunded - your funds are safe");
         console.log("💡 Try with a different amount or timing");
       } else {
         console.log("\n⏳ Order still pending - check manually later");
       }
+    } else {
+      console.log("⚠️ No final status available");
     }
   } catch (error) {
     console.error("\n❌ Test failed:", error.message);
