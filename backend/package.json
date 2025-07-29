@@ -8,6 +8,7 @@
     "dev": "ts-node --watch server.ts",
     "build": "tsc",
     "test": "node test/full-cross-chain-test.js",
+    "test:defi": "node test/defi-api-test.js",
     "setup": "node setup-env.js"
   },
   "keywords": [],
