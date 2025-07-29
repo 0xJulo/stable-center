@@ -67,11 +67,6 @@ app.use("*", (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Cross-chain swap API server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔗 API base: http://localhost:${PORT}/api/swap`);
-  console.log(
-    `📋 Supported chains: http://localhost:${PORT}/api/swap/supported-chains`
-  );
 });
 
 export default app;

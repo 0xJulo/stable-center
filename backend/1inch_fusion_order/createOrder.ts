@@ -7,14 +7,44 @@ import {
   SDK,
 } from "@1inch/cross-chain-sdk";
 import Web3 from "web3";
+import { ethers } from "ethers";
 import { randomBytes } from "node:crypto";
 import dotenv from "dotenv";
+
+// ERC-20 ABI for approve function
+const ERC20_ABI = [
+  {
+    constant: false,
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    constant: true,
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    name: "allowance",
+    outputs: [{ name: "", type: "uint256" }],
+    payable: false,
+    stateMutability: "view",
+    type: "function",
+  },
+];
 
 dotenv.config();
 
 // Validate environment variables
 const privateKey = process.env.PRIVATE_KEY;
 const authKey = process.env.FUSION_AUTH_KEY;
+const rpcUrl = process.env.RPC_URL;
 
 if (!privateKey) {
   throw new Error("PRIVATE_KEY environment variable is required");
@@ -24,6 +54,10 @@ if (!authKey) {
   throw new Error("FUSION_AUTH_KEY environment variable is required");
 }
 
+if (!rpcUrl) {
+  throw new Error("RPC_URL environment variable is required");
+}
+
 // Validate private key format
 if (!privateKey.startsWith("0x") || privateKey.length !== 66) {
   throw new Error(
@@ -31,7 +65,7 @@ if (!privateKey.startsWith("0x") || privateKey.length !== 66) {
   );
 }
 
-const rpc = "https://ethereum-rpc.publicnode.com";
+const rpc = rpcUrl;
 const source = "stablescenter";
 
 const web3 = new Web3(rpc);
@@ -48,16 +82,114 @@ const sdk = new SDK({
   url: "https://api.1inch.dev/fusion-plus",
   authKey,
   blockchainProvider: new PrivateKeyProviderConnector(privateKey, web3 as any),
+  httpProvider: {
+    get: async (url: string) => {
+      console.log("🌐 HTTP GET Request:", url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${authKey}`,
+          Accept: "application/json",
+        },
+      });
+      console.log("🌐 HTTP GET Response Status:", response.status);
+      const data = await response.json();
+      console.log("🌐 HTTP GET Response Data Keys:", Object.keys(data));
+      return data;
+    },
+    post: async (url: string, data: unknown) => {
+      console.log("🌐 HTTP POST Request:", url);
+      console.log("🌐 HTTP POST Request Data Keys:", Object.keys(data as any));
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authKey}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      console.log("🌐 HTTP POST Response Status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("🌐 HTTP POST Error Response:", errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      // Check if response has content
+      const responseText = await response.text();
+      console.log("🌐 HTTP POST Response Text:", responseText);
+
+      if (!responseText || responseText.trim() === "") {
+        console.log(
+          "🌐 HTTP POST Response: Empty response (this is normal for successful submissions)"
+        );
+        return { success: true, status: response.status };
+      }
+
+      try {
+        const responseData = JSON.parse(responseText);
+        console.log(
+          "🌐 HTTP POST Response Data Keys:",
+          Object.keys(responseData)
+        );
+        return responseData;
+      } catch (parseError) {
+        console.log("🌐 HTTP POST Response Parse Error:", parseError);
+        console.log("🌐 HTTP POST Raw Response:", responseText);
+        throw new Error(`Failed to parse response: ${responseText}`);
+      }
+    },
+  },
 });
 
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Function to check and approve token allowance
+async function ensureTokenAllowance(
+  tokenAddress: string,
+  spenderAddress: string,
+  amount: string
+): Promise<void> {
+  console.log("🔐 Checking token allowance...");
+  console.log("  - Token:", tokenAddress);
+  console.log("  - Spender:", spenderAddress);
+  console.log("  - Amount:", amount);
+
+  const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenAddress);
+
+  // Check current allowance
+  const currentAllowance = await tokenContract.methods
+    .allowance(walletAddress, spenderAddress)
+    .call({ from: walletAddress });
+
+  console.log("  - Current allowance:", currentAllowance);
+  console.log("  - Required amount:", amount);
+
+  if (BigInt(currentAllowance as any) >= BigInt(amount)) {
+    console.log("✅ Sufficient allowance already exists");
+    return;
+  }
+
+  console.log("⚠️ Insufficient allowance, approving...");
+
+  // Approve maximum amount (unlimited allowance)
+  const maxAmount =
+    "115792089237316195423570985008687907853269984665640564039457584007913129639935"; // 2^256 - 1
+
+  const approveTx = await tokenContract.methods
+    .approve(spenderAddress, maxAmount)
+    .send({ from: walletAddress, gas: "100000" });
+
+  console.log("✅ Token approval successful");
+  console.log("  - Transaction hash:", approveTx.transactionHash);
+}
+
 // Chain IDs
 const CHAIN_IDS = {
   ETHEREUM: NetworkEnum.ETHEREUM,
-  SOLANA: NetworkEnum.SOLANA,
   BASE: NetworkEnum.COINBASE,
   AVALANCHE: NetworkEnum.AVALANCHE,
   BSC: NetworkEnum.BINANCE,
@@ -69,10 +201,6 @@ const DEFAULT_TOKENS = {
     USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC on Ethereum
     USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT on Ethereum
     WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH on Ethereum
-  },
-  [CHAIN_IDS.SOLANA]: {
-    USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC on Solana
-    USDT: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT on Solana
   },
   [CHAIN_IDS.BASE]: {
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC on Base
@@ -97,14 +225,12 @@ export async function createFusionOrder({
   dstChainId,
   srcTokenAddress,
   dstTokenAddress,
-  simulate = false,
 }: {
   amount: string;
   srcChainId: number;
   dstChainId: number;
   srcTokenAddress?: string;
   dstTokenAddress?: string;
-  simulate?: boolean;
 }) {
   try {
     // Validate chain IDs
@@ -158,42 +284,41 @@ export async function createFusionOrder({
     }
 
     console.log(
-      `Creating ${
-        simulate ? "simulated " : ""
-      }cross-chain order from chain ${srcChainId} to chain ${dstChainId}`
+      `Creating cross-chain order from chain ${srcChainId} to chain ${dstChainId}`
     );
     console.log(`Source token: ${finalSrcToken}`);
     console.log(`Destination token: ${finalDstToken}`);
     console.log(`Amount: ${amount}`);
 
-    if (simulate) {
-      // Return simulated order data without making actual API calls
-      const mockSecrets = Array.from({ length: 1 }).map(
-        () => "0x" + randomBytes(32).toString("hex")
-      );
-      const mockSecretHashes = mockSecrets.map((s) => HashLock.hashSecret(s));
+    // Check and approve token allowance using ethers.js
+    const provider = new ethers.JsonRpcProvider(rpc);
+    const wallet = new ethers.Wallet(privateKey!, provider);
+    const tokenContract = new ethers.Contract(finalSrcToken, ERC20_ABI, wallet);
+    const spenderAddress = "0x111111125421ca6dc452d289314280a0f8842a65"; // aggregation router v6
 
-      return {
-        hash: "0x" + randomBytes(32).toString("hex"),
-        secrets: mockSecrets,
-        secretHashes: mockSecretHashes,
-        quote: {
-          srcChainId,
-          dstChainId,
-          srcTokenAddress: finalSrcToken,
-          dstTokenAddress: finalDstToken,
-          amount,
-          estimatedAmount: (parseFloat(amount) * 0.99).toString(), // Simulate 1% fee
-          presets: {
-            [PresetEnum.fast]: {
-              secretsCount: 1,
-              estimatedTime: 300, // 5 minutes
-            },
-          },
-        },
-        status: "simulated",
-        simulation: true,
-      };
+    console.log("🔐 Checking token allowance...");
+    console.log("  - Token:", finalSrcToken);
+    console.log("  - Spender:", spenderAddress);
+    console.log("  - Wallet:", walletAddress);
+
+    const allowance = await tokenContract.allowance(
+      walletAddress,
+      spenderAddress
+    );
+    console.log("  - Current allowance:", allowance.toString());
+    console.log("  - Required amount:", amount);
+
+    if (allowance < ethers.MaxUint256) {
+      console.log("⚠️ Insufficient allowance, approving...");
+      const approveTx = await tokenContract.approve(
+        spenderAddress,
+        ethers.MaxUint256
+      );
+      await approveTx.wait();
+      console.log("✅ Token approval successful");
+      console.log("  - Transaction hash:", approveTx.hash);
+    } else {
+      console.log("✅ Sufficient allowance already exists");
     }
 
     // Get quote
@@ -234,16 +359,20 @@ export async function createFusionOrder({
       source,
       secretHashes,
     });
-    console.log({ hash }, "order created");
+
+    console.log("✅ Order created successfully");
+    console.log("📋 Order hash:", hash);
+    console.log("📋 Quote ID:", quoteId);
 
     // Submit order
+    console.log("🔄 Calling sdk.submitOrder()...");
     const _orderInfo = await sdk.submitOrder(
       quote.srcChainId,
       order as any,
       quoteId,
       secretHashes
     );
-    console.log({ hash }, "order submitted");
+    console.log("✅ Order submitted successfully");
 
     return {
       hash,
@@ -251,7 +380,6 @@ export async function createFusionOrder({
       secretHashes,
       quote,
       status: "submitted",
-      simulation: false,
     };
   } catch (error) {
     console.error("Error creating fusion order:", error);
@@ -310,14 +438,12 @@ export async function createCompleteFusionOrder({
   dstChainId,
   srcTokenAddress,
   dstTokenAddress,
-  simulate = false,
 }: {
   amount: string;
   srcChainId: number;
   dstChainId: number;
   srcTokenAddress?: string;
   dstTokenAddress?: string;
-  simulate?: boolean;
 }) {
   try {
     // Create the order
@@ -327,15 +453,7 @@ export async function createCompleteFusionOrder({
       dstChainId,
       srcTokenAddress,
       dstTokenAddress,
-      simulate,
     });
-
-    if (simulate) {
-      return {
-        ...orderResult,
-        finalStatus: "simulated",
-      };
-    }
 
     // Monitor the order status until completion
     const finalStatus = await monitorOrderStatus(

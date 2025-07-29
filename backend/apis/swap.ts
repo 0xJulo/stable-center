@@ -34,7 +34,6 @@ router.post("/cross-chain", async (req, res) => {
       dstTokenAddress: dstToken,
       srcChainId,
       dstChainId,
-      simulate,
     });
 
     res.status(200).json({
@@ -81,7 +80,6 @@ router.post("/cross-chain/complete", async (req, res) => {
       dstTokenAddress: dstToken,
       srcChainId,
       dstChainId,
-      simulate,
     });
 
     res.status(200).json({
@@ -131,22 +129,28 @@ router.get("/quote", async (req, res) => {
       dstChainId: Number(dstChainId),
       srcTokenAddress: srcToken as string,
       dstTokenAddress: dstToken as string,
-      simulate: true,
     });
 
     console.log("✅ Quote received successfully");
-    console.log("Quote data:", JSON.stringify(result, null, 2));
+
+    // Extract only the basic data, avoiding complex objects that might contain BigInts
+    const quoteData = {
+      srcChainId: Number(srcChainId),
+      dstChainId: Number(dstChainId),
+      srcTokenAddress: srcToken as string,
+      dstTokenAddress: dstToken as string,
+      amount: amount as string,
+      orderHash: result.hash,
+      status: result.status,
+      // Basic quote info as strings
+      srcTokenAmount: result.quote.srcTokenAmount.toString(),
+      dstTokenAmount: result.quote.dstTokenAmount.toString(),
+      quoteId: result.quote.quoteId,
+    };
 
     res.status(200).json({
       success: true,
-      data: {
-        quote: result.quote,
-        srcChainId: Number(srcChainId),
-        dstChainId: Number(dstChainId),
-        srcTokenAddress: srcToken as string,
-        dstTokenAddress: dstToken as string,
-        amount: amount as string,
-      },
+      data: quoteData,
       message: "Quote retrieved successfully",
     });
   } catch (err: any) {
