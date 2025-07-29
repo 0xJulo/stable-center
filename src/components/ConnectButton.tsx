@@ -2,8 +2,11 @@
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { User } from "lucide-react";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
 
 export default function CustomConnectButton() {
+    const { formattedValue, isLoading } = useWalletBalance();
+    
     return (
         <ConnectButton.Custom>
             {({
@@ -30,7 +33,7 @@ export default function CustomConnectButton() {
                                 return (
                                     <button
                                         onClick={openConnectModal}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
+                                        className="bg-[#102E37] border border-[#B5CAA9/20] hover:bg-light-green text-light-green hover:text-[#051419] font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
                                     >
                                         <User className="w-4 h-4" />
                                         Login
@@ -42,15 +45,20 @@ export default function CustomConnectButton() {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={openAccountModal}
-                                        className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
+                                        className="bg-[#102E37] border border-[#B5CAA9/20] hover:bg-light-green text-light-green hover:text-[#051419] font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <div className="text-sm font-medium">
                                             {account.displayName}
                                         </div>
                                     </button>
+                                    <div className="bg-[#102E37] border border-[#B5CAA9/20] text-light-green font-medium py-2 px-4 rounded-lg">
+                                        <div className="text-sm">
+                                            {isLoading ? "Loading..." : formattedValue}
+                                        </div>
+                                    </div>
                                     <button
                                         onClick={openChainModal}
-                                        className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                                        className="bg-[#102E37] border border-[#B5CAA9/20] hover:bg-light-green text-light-green hover:text-[#051419] font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                                     >
                                         {chain.hasIcon && (
                                             <div className="w-4 h-4">

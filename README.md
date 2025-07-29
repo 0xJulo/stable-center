@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stable Center
 
-## Getting Started
+The StableCenter application is designed to make investing in stablecoin DeFi protocols straightforward for new and everyday crypto users. 
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Main components
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Global components
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Wallet connection](/src/components/ConnectButton.tsx) - `/src/components/ConnectButton.tsx`
+    - Wallet connecion component using Rainbowkit
+    - Login has been used instead of "connect", making it more user friendly for people not familiar with blockchain terminology
+- [Header](/src/components/Header.tsx) - `/src/components/Header.tsx`
+    - Header for the application, including wallet connect and application links
 
-## Learn More
+### Landing Page
 
-To learn more about Next.js, take a look at the following resources:
+The landing page of the application is designed to give users a bit of context into stablecoins, as well as the ability to login and start investing right away. 
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**File structure:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Main Page](/src/app/page.tsx) - `/src/app/page.tsx` 
+    - The main page, comprised of the below components
+- [Hero Component](/src/components//home/Hero.tsx) - `/src/components//home/Hero.tsx`
+    - Contains the headline and subtitle
+    - Has an instance of the [Connect Button](/src/components/ConnectButton.tsx) which allows user to login here
+    - It will display the connection, as well as the value of the account in USD
+- [How It Works](/src/components/home/HowItWorks.tsx) - `/src/components/home/HowItWorks.tsx`
+    - Explainer section for the application
+    - Three column section detailing relevant information for the user
+- [Investment Card](/src/components/home/InvestmentCard.tsx) - `/src/components/home/InvestmentCard.tsx`
+    - Component for showcasing DeFi investment opportunities
+    - Includes information such as APY, the project name, risk and estimated fees
+    - Has an input and invest button for users to quick invest
+- [Top Investments](/src/components/home/TopInvestments.tsx) - `/src/components/home/TopInvestments.tsx`
+    - A list of `InvestmentCard.tsx` components
