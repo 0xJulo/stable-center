@@ -26,7 +26,7 @@ interface InvestmentCardProps {
         <p className="text-white text-1rem">{risk}</p>
         <p>$1.20</p>
         <div className="flex flex-row gap-2">
-          <Input type="number" placeholder="Amount in USD" />
+          <Input className="bg-[#17404C]" type="number" placeholder="Amount in USD" />
           <Button className="font-medium py-[1rem] px-4 bg-light-green">
             <Link href="/my-investments">Invest</Link>
           </Button>
