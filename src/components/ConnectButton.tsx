@@ -3,6 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { User } from "lucide-react";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
+import Image from "next/image";
 
 export default function CustomConnectButton() {
     const { formattedValue, isLoading } = useWalletBalance();
@@ -63,9 +64,11 @@ export default function CustomConnectButton() {
                                         {chain.hasIcon && (
                                             <div className="w-4 h-4">
                                                 {chain.iconUrl && (
-                                                    <img
+                                                    <Image
                                                         alt={chain.name ?? 'Chain icon'}
                                                         src={chain.iconUrl}
+                                                        width={16}
+                                                        height={16}
                                                         className="w-4 h-4"
                                                     />
                                                 )}
