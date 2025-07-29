@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import swapRouter from "./apis/swap";
+import defiRouter from "./apis/defi";
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ app.get("/health", (req, res) => {
 
 // API routes
 app.use("/api/swap", swapRouter);
+app.use("/api/defi", defiRouter);
 
 // Error handling middleware
 app.use(
