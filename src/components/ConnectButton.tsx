@@ -59,7 +59,7 @@ export default function CustomConnectButton() {
                                     </div>
                                     <button
                                         onClick={openChainModal}
-                                        className="bg-[#102E37] border border-[#B5CAA9/20] hover:bg-light-green text-light-green hover:text-[#051419] font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                                        className="bg-[#102E37] border border-[#B5CAA9/20] hover:bg-light-green text-light-green hover:text-[#051419] font-medium py-2 px-4 rounded-lg transition-colors flex items-center cursor-pointer"
                                     >
                                         {chain.hasIcon && (
                                             <div className="w-4 h-4">
@@ -74,7 +74,6 @@ export default function CustomConnectButton() {
                                                 )}
                                             </div>
                                         )}
-                                        <span className="text-sm">{chain.name}</span>
                                     </button>
                                 </div>
                             )

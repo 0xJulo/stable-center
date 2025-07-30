@@ -1,19 +1,68 @@
-import ConnectButton from "@/components/ConnectButton";
+"use client";
+
+import { motion } from "motion/react";
+import Image from "next/image";
+import HomePageConnectButton from "@/components/home/HomePageConnectButton";
 
 export default function Hero() {
-    return (
-      <div className="flex flex-col gap-4 justify-center items-center py-12">
-        <h1 className="text-7xl font-semibold flex flex-col justify-center items-center tracking-tight">
-          <span className="text-white">Earn with your stablecoins</span>
-          <span className="text-[#d8fac5]">without the headache.</span>
-        </h1>
-        <p className="text-[1.5rem]">
-          We handle the complexity.{" "}
-          <span className="text-[#d8fac5]">You earn.</span>
+  return (
+    <div className="flex flex-col gap-4 justify-center items-start py-12">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 2.8 }}
+        className="flex flex-row gap-2 items-center"
+      >
+        <Image src="/1inch2.png" alt="1inch" width={35} height={35} />
+        <p className="text-sm text-white">
+          Powered by <span className="font-bold">1inch</span>
         </p>
-        <div className="flex flex-row gap-2 mt-6">
-          <ConnectButton />
-        </div>
-      </div>
-    );
-  }
+      </motion.div>
+
+      <motion.h1 className="text-[5.25rem] leading-[5.25rem] font-semibold flex flex-col justify-center items-start tracking-tight">
+        <motion.span
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-white"
+        >
+          Earn with your stablecoins
+        </motion.span>
+        <motion.span
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-[#d8fac5]"
+        >
+          without the headache.
+        </motion.span>
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 1.2 }}
+        className="text-[1.5rem]"
+      >
+        We handle the complexity.{" "}
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 2 }}
+          className="text-[#d8fac5]"
+        >
+          You reap the benefits.
+        </motion.span>
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 2.8 }}
+        className="flex flex-row gap-2 mt-6"
+      >
+        <HomePageConnectButton />
+      </motion.div>
+    </div>
+  );
+}

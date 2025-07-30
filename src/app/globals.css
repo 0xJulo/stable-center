@@ -92,6 +92,17 @@
   h1 {
     @apply text-2xl font-bold;
   }
+  h2 {
+    @apply text-light-green text-[3rem] font-semibold tracking-tight;
+  }
+}
+
+/* Scroll offset for fixed header */
+#trending-investments,
+#what-are-stabelcoins,
+#why-defi,
+#all-investments {
+  scroll-margin-top: 10rem;
 }
 
 .dark {

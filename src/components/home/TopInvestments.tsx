@@ -1,8 +1,8 @@
 import InvestmentCard from "@/components/home/InvestmentCard";
 
-export default function TopInvestments() {
+export default function TopInvestments({ id }: { id: string }) {
     return (
-      <section id="top-investments" className="flex flex-col gap-4 items-center w-full py-24">
+      <section id={id} className="flex flex-col gap-4 items-center w-full py-24">
         <h2 className="text-light-green text-4xl font-bold">Top investments</h2>
         <div className="w-full grid grid-cols-[10%_12%_25%_10%_10%_26%] gap-4 items-center p-3">
           <p className="text-white text-[0.75rem]">APY</p>
