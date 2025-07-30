@@ -4,7 +4,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import UserStats from "@/components/my-investments/UserStats"
-import TopInvestments from "@/components/home/TopInvestments";
+import AllInvestments from "@/components/global/AllInvestments";
 import OpenInvestments from "@/components/my-investments/OpenInvestments";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -35,12 +35,12 @@ export default function MyInvestmentsPage() {
         return null;
     }
     return (
-        <div className="bg-background font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen max-w-7xl mx-auto p-8 pb-20 gap-16 sm:p-20">
-            <main className="flex flex-col gap-[32px] row-start-2 items-center w-full max-w-6xl">
-                <h1 className="text-4xl font-bold text-light-green">My Investments</h1>
+        <div className="bg-background font-sans grid grid-rows-[20px_1fr_20px] items-start justify-items-center min-h-screen max-w-[95rem] mx-auto p-8 pb-20 gap-16 sm:p-20">
+            <main className="flex flex-col gap-[32px] row-start-2 items-start w-full max-w-6xl">
+                <h1 className="text-[5.25rem] leading-[5.25rem] font-bold text-light-green mb-6">My Investments</h1>
                 <UserStats />
                 <OpenInvestments />
-                <TopInvestments />
+                <AllInvestments id="all-investments" />
             </main>
         </div>
     );

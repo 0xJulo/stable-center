@@ -24,8 +24,9 @@ export default function HowItWorks() {
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 4, ease: "easeOut" }}
+      transition={{ duration: 0.5, delay: 2.8, ease: "easeOut" }}
       className="flex flex-col gap-4 items-start py-24"
+      id="how-it-works"
     >
       <h2>How it works</h2>
       <div className="flex flex-row gap-4 mt-1">

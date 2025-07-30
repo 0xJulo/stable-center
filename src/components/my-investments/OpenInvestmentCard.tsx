@@ -9,9 +9,10 @@ import { ChevronLeft } from "lucide-react";
 interface InvestmentCardProps {
     apr: number;
     name: string;
-    aprExample: string;
     risk: string;
-    estimatedFees: number;
+    totalRewards: number;
+    unclaimedRewards: number;
+    investedAmount: number;
   }
 
 function InvestmentActions({ 
@@ -113,19 +114,20 @@ function AddInput({
   export default function OpenInvestmentCard({
     apr,
     name,
-    aprExample,
     risk,
-    estimatedFees,
+    totalRewards,
+    unclaimedRewards,
+    investedAmount,
   }: InvestmentCardProps) {
     const [mode, setMode] = useState<'default' | 'withdraw' | 'add'>('default');
     return (
       <Card className="w-full bg-[#102E37] border border-[#B5CAA9/20] grid grid-cols-[1fr_1.1fr_0.8fr_1fr_1fr_1fr_2.6fr] gap-4 items-center p-3">
         <p className="text-light-green text-2xl font-bold">{apr}%</p>
         <p className="text-white text-1rem">{name}</p>
-        <p className="text-white text-1rem">{aprExample}</p>
+        <p className="text-white text-1rem">${investedAmount}</p>
         <p className="text-white text-1rem">{risk}</p>
-        <p>$1.20</p>
-        <p>$1.20</p>
+        <p className="text-white text-1rem">${totalRewards}</p>
+        <p className="text-white text-1rem">${unclaimedRewards}</p>
         {mode === 'default' && (
           <InvestmentActions 
             onClaimRewards={() => console.log('Claim rewards')}

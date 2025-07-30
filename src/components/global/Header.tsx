@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import CustomConnectButton from "@/components/ConnectButton";
+import CustomConnectButton from "@/components/global/ConnectButton";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "motion/react";
 
@@ -28,9 +28,16 @@ export default function Header() {
         {isHomePage && (
           <nav className="flex items-center gap-4">
             <Link
+              href="#how-it-works"
+              className="text-white hover:text-light-green"
+            >
+              How it works
+            </Link>
+            <Link
               href="#trending-investments"
               className="text-white hover:text-light-green"
             >
+                
               Trending Investments
             </Link>
             <Link

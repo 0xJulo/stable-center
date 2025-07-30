@@ -1,6 +1,7 @@
 import HowItWorks from "@/components/home/HowItWorks";
 import Hero from "@/components/home/Hero";
-import TopInvestments from "@/components/home/TopInvestments";
+import TopInvestments from "@/components/global/TopInvestments";
+import AllInvestments from "@/components/global/AllInvestments";
 
 import { Card } from "@/components/ui/card";
 import {
@@ -131,7 +132,7 @@ export default function Home() {
         <TopInvestments id="trending-investments" />
         <WhatAreStabelcoins />
         <WhyDeFi />
-        <TopInvestments id="all-investments" />
+        <AllInvestments id="all-investments" />
       </main>
     </div>
   );

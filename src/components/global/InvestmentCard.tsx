@@ -9,6 +9,7 @@ interface InvestmentCardProps {
     aprExample: string;
     risk: string;
     estimatedFees: number;
+    trending?: boolean;
   }
   
   export default function InvestmentCard({
@@ -17,6 +18,7 @@ interface InvestmentCardProps {
     aprExample,
     risk,
     estimatedFees,
+    trending,
   }: InvestmentCardProps) {
     return (
       <Card className="w-full bg-[#102E37] border border-[#B5CAA9/20] grid grid-cols-[10%_12%_25%_10%_10%_26%] gap-4 items-center p-3">
@@ -24,7 +26,7 @@ interface InvestmentCardProps {
         <p className="text-white text-1rem">{name}</p>
         <p className="text-white text-1rem">{aprExample}</p>
         <p className="text-white text-1rem">{risk}</p>
-        <p>$1.20</p>
+        <p className="text-white text-1rem">${estimatedFees}</p>
         <div className="flex flex-row gap-2">
           <Input className="bg-[#17404C]" type="number" placeholder="Amount in USD" />
           <Button className="font-medium py-[1rem] px-4 bg-light-green">
