@@ -36,7 +36,7 @@ export default function MyInvestmentsPage() {
     }
     return (
         <div className="bg-background font-sans grid grid-rows-[20px_1fr_20px] items-start justify-items-center min-h-screen max-w-[95rem] mx-auto p-8 pb-20 gap-16 sm:p-20">
-            <main className="flex flex-col gap-[32px] row-start-2 items-start w-full max-w-6xl">
+            <main className="flex flex-col gap-[32px] row-start-2 items-start">
                 <h1 className="text-[5.25rem] leading-[5.25rem] font-bold text-light-green mb-6">My Investments</h1>
                 <UserStats />
                 <OpenInvestments />

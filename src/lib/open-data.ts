@@ -5,6 +5,7 @@ interface OpenInvestmentData {
   totalRewards: number;
   unclaimedRewards: number;
   investedAmount: number;
+  chain: string;
 }
 
 const mockOpenInvestmentData: OpenInvestmentData[] = [
@@ -14,7 +15,8 @@ const mockOpenInvestmentData: OpenInvestmentData[] = [
     risk: "Low",
     totalRewards: 125.50,
     unclaimedRewards: 23.75,
-    investedAmount: 1000
+    investedAmount: 1000,
+    chain: "Ethereum"
   },
   {
     apr: 8.7,
@@ -22,7 +24,8 @@ const mockOpenInvestmentData: OpenInvestmentData[] = [
     risk: "Low",
     totalRewards: 198.30,
     unclaimedRewards: 45.20,
-    investedAmount: 2500
+    investedAmount: 2500,
+    chain: "Polygon"
   },
   {
     apr: 12.1,
@@ -30,7 +33,8 @@ const mockOpenInvestmentData: OpenInvestmentData[] = [
     risk: "Medium",
     totalRewards: 67.80,
     unclaimedRewards: 18.90,
-    investedAmount: 500
+    investedAmount: 500,
+    chain: "Optimism"
   },
   {
     apr: 6.8,
@@ -38,7 +42,8 @@ const mockOpenInvestmentData: OpenInvestmentData[] = [
     risk: "Low",
     totalRewards: 412.50,
     unclaimedRewards: 85.60,
-    investedAmount: 5000
+    investedAmount: 5000,
+    chain: "Base"
   },
   {
     apr: 15.3,
@@ -46,7 +51,8 @@ const mockOpenInvestmentData: OpenInvestmentData[] = [
     risk: "High",
     totalRewards: 89.25,
     unclaimedRewards: 31.40,
-    investedAmount: 750
+    investedAmount: 750,
+    chain: "BSC"
   },
   {
     apr: 9.4,
@@ -54,7 +60,8 @@ const mockOpenInvestmentData: OpenInvestmentData[] = [
     risk: "Medium",
     totalRewards: 203.70,
     unclaimedRewards: 67.80,
-    investedAmount: 1500
+    investedAmount: 1500,
+    chain: "Arbitrum"
   }
 ];
 

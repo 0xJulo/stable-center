@@ -35,9 +35,10 @@ export default function OpenInvestments() {
   return (
     <section id="open-investments" className="flex flex-col gap-4 items-start w-full py-24">
       <h2>Open investments</h2>
-      <div className="w-full grid grid-cols-[1fr_1.2fr_0.8fr_1fr_1fr_1fr_2.6fr] gap-4 items-start p-3">
+      <div className="w-full grid grid-cols-[1fr_1.1fr_0.9fr_0.8fr_1fr_1fr_1fr_2.6fr] gap-4 items-start p-3">
         <p className="text-white text-[0.75rem]">APY</p>
         <p className="text-white text-[0.75rem]">Project</p>
+        <p className="text-white text-[0.75rem]">Chain</p>
         <p className="text-white text-[0.75rem]">Investment</p>
         <p className="text-white text-[0.75rem]">Risks</p>
         <p className="text-white text-[0.75rem]">Total rewards</p>
@@ -49,6 +50,7 @@ export default function OpenInvestments() {
             key={`${investment.name}-${index}`}
             apr={investment.apr}
             name={investment.name}
+            chain={investment.chain}
             investedAmount={investment.investedAmount}
             risk={investment.risk}
             totalRewards={investment.totalRewards}
