@@ -34,11 +34,10 @@ export default function Header() {
               How it works
             </Link>
             <Link
-              href="#trending-investments"
+              href="#top-investments"
               className="text-white hover:text-light-green"
             >
-                
-              Trending Investments
+              Top Investments
             </Link>
             <Link
               href="#what-are-stabelcoins"

@@ -62,7 +62,6 @@ export default function AllInvestments({ id }: { id: string }) {
             risk={investment.risk}
             estimatedFees={investment.estimatedFees}
             chain={investment.chain}
-            trending={investment.trending}
           />
         ))}
       </div>

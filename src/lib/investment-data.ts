@@ -5,7 +5,6 @@ interface InvestmentCardData {
   risk: string;
   estimatedFees: number;
   chain: string;
-  trending?: boolean;
 }
 
 const mockInvestmentData: InvestmentCardData[] = [
@@ -23,8 +22,7 @@ const mockInvestmentData: InvestmentCardData[] = [
     aprExample: "$82 annually on $1,000",
     risk: "Medium",
     estimatedFees: 1.20,
-    chain: "Ethereum",
-    trending: true
+    chain: "Ethereum"
   },
   {
     apr: 12.1,
@@ -40,8 +38,7 @@ const mockInvestmentData: InvestmentCardData[] = [
     aprExample: "$68 annually on $1,000",
     risk: "Low",
     estimatedFees: 0.95,
-    chain: "Ethereum",
-    trending: true
+    chain: "Ethereum"
   },
   {
     apr: 15.3,
@@ -49,8 +46,7 @@ const mockInvestmentData: InvestmentCardData[] = [
     aprExample: "$153 annually on $1,000",
     risk: "High",
     estimatedFees: 2.10,
-    chain: "Ethereum",
-    trending: true
+    chain: "Ethereum"
   },
   {
     apr: 9.7,

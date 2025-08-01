@@ -129,7 +129,7 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-start">
         <Hero />
         <HowItWorks />
-        <TopInvestments id="trending-investments" />
+        <TopInvestments id="top-investments" />
         <WhatAreStabelcoins />
         <WhyDeFi />
         <AllInvestments id="all-investments" />

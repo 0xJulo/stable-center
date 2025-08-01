@@ -5,19 +5,18 @@ import InvestmentCard from "@/components/global/InvestmentCard";
 import { getInvestmentData, InvestmentCardData } from "@/lib/investment-data";
 
 export default function TopInvestments({ id }: { id: string }) {
-  const [trendingInvestments, setTrendingInvestments] = useState<
+  const [topInvestments, setTopInvestments] = useState<
     InvestmentCardData[]
   >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTrendingInvestments = async () => {
+    const fetchTopInvestments = async () => {
       try {
         const data = await getInvestmentData();
-        const trending = data.filter(
-          (investment) => investment.trending === true
-        );
-        setTrendingInvestments(trending);
+        // Show top 3 investments by APR
+        const topByApr = data.sort((a, b) => b.apr - a.apr).slice(0, 3);
+        setTopInvestments(topByApr);
       } catch (error) {
         console.error("Failed to fetch investment data:", error);
       } finally {
@@ -25,14 +24,14 @@ export default function TopInvestments({ id }: { id: string }) {
       }
     };
 
-    fetchTrendingInvestments();
+    fetchTopInvestments();
   }, []);
 
   if (loading) {
     return (
       <section id={id} className="flex flex-col gap-4 items-start w-full py-24">
         <h2>Top investments</h2>
-        <p className="text-white">Loading trending investments...</p>
+        <p className="text-white">Loading top investments...</p>
       </section>
     );
   }
@@ -55,7 +54,7 @@ export default function TopInvestments({ id }: { id: string }) {
         <p className="text-white text-[0.75rem]">Estimated fees</p>
       </div>
       <div className="flex flex-col gap-3 w-full">
-        {trendingInvestments.map((investment, index) => (
+        {topInvestments.map((investment, index) => (
           <InvestmentCard
             key={`${investment.name}-${index}`}
             apr={investment.apr}
@@ -64,7 +63,6 @@ export default function TopInvestments({ id }: { id: string }) {
             risk={investment.risk}
             estimatedFees={investment.estimatedFees}
             chain={investment.chain}
-            trending={investment.trending}
           />
         ))}
       </div>
