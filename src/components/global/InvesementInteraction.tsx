@@ -1,3 +1,14 @@
+/*
+
+    This component is used whenever a user clicks to invest or manage their
+    investment, such as withdrawing or adding funds.
+
+    It is used within the OpenInvestmentCard and InvestmentCard components.
+
+*/
+
+
+
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,9 +22,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+
+
+// These props determine which view the user sees
+// The component is then structure based off this initial type prop.
+
 interface InvestmentInteractionProps {
   type: "invest" | "manage";
 }
+
+
+// The header remains the same for both views, it should be hooked up to what the name of 
+// the investment is, and other information such as APY, platform, asset etc
 
 function InvestHeader() {
   return (
@@ -29,6 +49,10 @@ function InvestHeader() {
   );
 }
 
+
+
+// Component to show the user what chain they are currently connected to
+
 function CurrentChain() {
   return (
     <Card className="bg-[#102E37] border border-[#B5CAA9/20] gap-4 items-start p-3">
@@ -41,6 +65,10 @@ function CurrentChain() {
     </Card>
   );
 }
+
+
+// Component to show if the user has unclaimed rewards that they can claim
+// This is used when the type prop is "manage"
 
 function ClaimRewards() {
   return (
@@ -57,6 +85,12 @@ function ClaimRewards() {
     </Card>
   );
 }
+
+
+
+// Button component that can change based on where it is used
+// It is currently utilised across all the different view of the component
+// This will need to be hooked up to functions to perform the different actions
 
 interface ButtonSectionProps {
   buttonText: string;
@@ -75,6 +109,11 @@ function ButtonSection({ buttonText }: ButtonSectionProps) {
     </div>
   );
 }
+
+
+// Component for the base of investing in a pool
+// This will need to be update so that it shows the correct information
+// such as what assets they can use, and also the name of the pool
 
 function InvestSteps() {
   return (
@@ -116,6 +155,9 @@ function InvestSteps() {
   );
 }
 
+
+// Component built from the above code to create the layout for a user making a new investment
+
 function InvestLayout() {
   return (
     <div className="flex flex-col gap-6">
@@ -126,6 +168,9 @@ function InvestLayout() {
     </div>
   );
 }
+
+
+// Component for the withdraw section of the manage view
 
 function WithdrawSection() {
   return (
@@ -194,6 +239,10 @@ function WithdrawSection() {
   );
 }
 
+
+// Component for the add section of the manage view
+// It is very similar to the InvestLayout, but it utilised in ManageLayout differently
+
 function AddSection() {
   return (
     <div className="flex flex-col gap-4">
@@ -204,7 +253,11 @@ function AddSection() {
   );
 }
 
-function ManageSection() {
+
+// The main layout for the managed view
+// Comprised different components from above and has tabs to switch between add and withdraw
+
+function ManageLayout() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -241,6 +294,10 @@ function ManageSection() {
   );
 }
 
+
+// The main component that is used to render the different views
+
+
 export default function InvestmentInteraction({
   type,
 }: InvestmentInteractionProps) {
@@ -249,7 +306,7 @@ export default function InvestmentInteraction({
       case "invest":
         return <InvestLayout />;
       case "manage":
-        return <ManageSection />;
+        return <ManageLayout />;
       default:
         return <p>Investment type: {type}</p>;
     }
