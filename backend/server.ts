@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import swapRouter from "./apis/swap";
 import defiRouter from "./apis/defi";
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from parent directory
+dotenv.config({ path: "../.env" });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
