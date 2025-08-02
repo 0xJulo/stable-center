@@ -2,6 +2,7 @@ import express from "express";
 import {
   createFusionOrder,
   createCompleteFusionOrder,
+  getQuote,
 } from "../1inch_fusion_order/createOrder";
 
 const router = express.Router();
@@ -145,12 +146,10 @@ router.get("/quote", async (req, res) => {
   }
 
   try {
-    // Use the existing createFusionOrder function with simulate=true to get a quote
-    const { createFusionOrder } = await import(
-      "../1inch_fusion_order/createOrder"
-    );
+    // Use the new getQuote function to get a quote without creating an order
+    const { getQuote } = await import("../1inch_fusion_order/createOrder");
 
-    const result = await createFusionOrder({
+    const result = await getQuote({
       amount: amount as string,
       srcChainId: Number(srcChainId),
       dstChainId: Number(dstChainId),
@@ -164,12 +163,9 @@ router.get("/quote", async (req, res) => {
     const quoteData = {
       srcChainId: Number(srcChainId),
       dstChainId: Number(dstChainId),
-      srcTokenAddress: srcToken as string,
-      dstTokenAddress: dstToken as string,
+      srcTokenAddress: result.srcToken,
+      dstTokenAddress: result.dstToken,
       amount: amount as string,
-      orderHash: result.hash,
-      status: result.status,
-      // Basic quote info as strings
       srcTokenAmount: result.quote.srcTokenAmount.toString(),
       dstTokenAmount: result.quote.dstTokenAmount.toString(),
       quoteId: result.quote.quoteId,
@@ -186,6 +182,46 @@ router.get("/quote", async (req, res) => {
     console.error("Error message:", err.message);
     console.error("Error stack:", err.stack);
 
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+// Get order status
+router.get("/order-status/:orderHash", async (req, res) => {
+  const { orderHash } = req.params;
+
+  console.log("📊 Order status request received:");
+  console.log("Order hash:", orderHash);
+
+  if (!orderHash) {
+    return res.status(400).json({
+      success: false,
+      error: "Order hash is required",
+    });
+  }
+
+  try {
+    // Import the 1inch SDK to check order status
+    const { getOrderStatus } = await import(
+      "../1inch_fusion_order/createOrder"
+    );
+
+    const status = await getOrderStatus(orderHash);
+
+    console.log("✅ Order status retrieved successfully");
+
+    res.status(200).json({
+      success: true,
+      data: {
+        status,
+      },
+      message: "Order status retrieved successfully",
+    });
+  } catch (err: any) {
+    console.error("❌ Error getting order status:", err);
     res.status(500).json({
       success: false,
       error: err.message,

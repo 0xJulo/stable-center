@@ -219,7 +219,7 @@ const DEFAULT_TOKENS = {
   },
 };
 
-export async function createFusionOrder({
+export async function getQuote({
   amount,
   srcChainId,
   dstChainId,
@@ -231,6 +231,149 @@ export async function createFusionOrder({
   dstChainId: number;
   srcTokenAddress?: string;
   dstTokenAddress?: string;
+}) {
+  try {
+    console.log("🔍 Getting quote for cross-chain swap...");
+    console.log("Parameters:", {
+      amount,
+      srcChainId,
+      dstChainId,
+      srcTokenAddress,
+      dstTokenAddress,
+    });
+
+    // Validate chain IDs
+    if (!srcChainId || !dstChainId) {
+      throw new Error("Source and destination chain IDs are required");
+    }
+
+    if (srcChainId === dstChainId) {
+      throw new Error(
+        "Source and destination chain IDs must be different for cross-chain swaps"
+      );
+    }
+
+    // Use default tokens if not provided, based on the source chain
+    let finalSrcToken = srcTokenAddress;
+    let finalDstToken = dstTokenAddress;
+
+    // Helper function to get default token for a chain
+    const getDefaultTokenForChain = (
+      chainId: number,
+      tokenType: "USDC" | "USDT" | "WETH" | "WAVAX" = "USDC"
+    ) => {
+      const chainTokens =
+        DEFAULT_TOKENS[chainId as keyof typeof DEFAULT_TOKENS];
+      if (chainTokens && chainTokens[tokenType]) {
+        return chainTokens[tokenType];
+      }
+      return null;
+    };
+
+    if (!finalSrcToken) {
+      const defaultToken = getDefaultTokenForChain(srcChainId);
+      if (defaultToken) {
+        finalSrcToken = defaultToken;
+      } else {
+        throw new Error(
+          `Source token address is required for chain ID ${srcChainId}. No default token available.`
+        );
+      }
+    }
+
+    if (!finalDstToken) {
+      const defaultToken = getDefaultTokenForChain(dstChainId);
+      if (defaultToken) {
+        finalDstToken = defaultToken;
+      } else {
+        throw new Error(
+          `Destination token address is required for chain ID ${dstChainId}. No default token available.`
+        );
+      }
+    }
+
+    console.log(
+      `Getting quote for cross-chain swap from chain ${srcChainId} to chain ${dstChainId}`
+    );
+    console.log(`Source token: ${finalSrcToken}`);
+    console.log(`Destination token: ${finalDstToken}`);
+    console.log(`Amount: ${amount}`);
+    console.log(`Wallet address: ${walletAddress}`);
+
+    // Validate parameters
+    if (!finalSrcToken || !finalDstToken) {
+      throw new Error("Invalid token addresses");
+    }
+
+    if (!amount || parseFloat(amount) <= 0) {
+      throw new Error("Invalid amount");
+    }
+
+    console.log("✅ Parameters validated successfully");
+
+    // Get quote using the SDK
+    const quotePayload = {
+      amount,
+      srcChainId,
+      dstChainId,
+      enableEstimate: true,
+      srcTokenAddress: finalSrcToken,
+      dstTokenAddress: finalDstToken,
+      walletAddress,
+    };
+
+    console.log("📤 Getting quote - Quote payload:");
+    console.log(JSON.stringify(quotePayload, null, 2));
+
+    const quote = await sdk.getQuote(quotePayload);
+
+    console.log("✅ Quote received:", {
+      srcTokenAmount: quote.srcTokenAmount.toString(),
+      dstTokenAmount: quote.dstTokenAmount.toString(),
+      quoteId: quote.quoteId,
+    });
+
+    return {
+      quote,
+      srcToken: finalSrcToken,
+      dstToken: finalDstToken,
+    };
+  } catch (error) {
+    console.error("❌ Error getting quote:");
+    console.error("Error details:", error);
+    console.error("Error message:", (error as Error).message);
+    console.error("Error stack:", (error as Error).stack);
+
+    // Check if it's an API error
+    if (error instanceof Error) {
+      if (error.message.includes("HTTP")) {
+        console.error("This is an HTTP error from the 1inch API");
+      }
+      if (error.message.includes("BigInt")) {
+        console.error(
+          "This is a BigInt conversion error - likely invalid API response"
+        );
+      }
+    }
+
+    throw new Error(`Failed to get quote: ${(error as Error).message}`);
+  }
+}
+
+export async function createFusionOrder({
+  amount,
+  srcChainId,
+  dstChainId,
+  srcTokenAddress,
+  dstTokenAddress,
+  userWalletAddress = "0x0000000000000000000000000000000000000000", // Default for quotes
+}: {
+  amount: string;
+  srcChainId: number;
+  dstChainId: number;
+  srcTokenAddress?: string;
+  dstTokenAddress?: string;
+  userWalletAddress?: string;
 }) {
   try {
     // Validate chain IDs
@@ -289,37 +432,7 @@ export async function createFusionOrder({
     console.log(`Source token: ${finalSrcToken}`);
     console.log(`Destination token: ${finalDstToken}`);
     console.log(`Amount: ${amount}`);
-
-    // Check and approve token allowance using ethers.js
-    const provider = new ethers.JsonRpcProvider(rpc);
-    const wallet = new ethers.Wallet(privateKey!, provider);
-    const tokenContract = new ethers.Contract(finalSrcToken, ERC20_ABI, wallet);
-    const spenderAddress = "0x111111125421ca6dc452d289314280a0f8842a65"; // aggregation router v6
-
-    console.log("🔐 Checking token allowance...");
-    console.log("  - Token:", finalSrcToken);
-    console.log("  - Spender:", spenderAddress);
-    console.log("  - Wallet:", walletAddress);
-
-    const allowance = await tokenContract.allowance(
-      walletAddress,
-      spenderAddress
-    );
-    console.log("  - Current allowance:", allowance.toString());
-    console.log("  - Required amount:", amount);
-
-    if (allowance < ethers.MaxUint256) {
-      console.log("⚠️ Insufficient allowance, approving...");
-      const approveTx = await tokenContract.approve(
-        spenderAddress,
-        ethers.MaxUint256
-      );
-      await approveTx.wait();
-      console.log("✅ Token approval successful");
-      console.log("  - Transaction hash:", approveTx.hash);
-    } else {
-      console.log("✅ Sufficient allowance already exists");
-    }
+    console.log(`User wallet: ${userWalletAddress}`);
 
     // Get quote
     const quotePayload = {
@@ -380,12 +493,47 @@ export async function createFusionOrder({
       secretHashes,
       quote,
       status: "submitted",
+      // Return approval info for frontend
+      approvalInfo: {
+        tokenAddress: finalSrcToken,
+        spenderAddress: "0x111111125421ca6dc452d289314280a0f8842a65", // aggregation router v6
+        amount: amount,
+      },
     };
   } catch (error) {
     console.error("Error creating fusion order:", error);
     throw new Error(
       `Failed to create fusion order: ${(error as Error).message}`
     );
+  }
+}
+
+export async function getOrderStatus(hash: string): Promise<any> {
+  try {
+    console.log(`Getting order status for hash: ${hash}`);
+
+    // Make direct HTTP call to 1inch API
+    const response = await fetch(
+      `https://api.1inch.dev/fusion-plus/orders/v1.0/order/status/${hash}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authKey}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`1inch API responded with status: ${response.status}`);
+    }
+
+    const statusResponse = await response.json();
+    console.log("Order status:", statusResponse);
+    return statusResponse;
+  } catch (error) {
+    console.error("Error getting order status:", error);
+    throw new Error(`Failed to get order status: ${(error as Error).message}`);
   }
 }
 
@@ -408,12 +556,13 @@ export async function monitorOrderStatus(
       }
 
       // Check if order finished
-      const { status } = await sdk.getOrderStatus(hash);
+      const statusResponse = await getOrderStatus(hash);
+      const status = statusResponse.status;
 
       if (
-        status === OrderStatus.Executed ||
-        status === OrderStatus.Expired ||
-        status === OrderStatus.Refunded
+        status === "executed" ||
+        status === "expired" ||
+        status === "refunded"
       ) {
         break;
       }
@@ -421,7 +570,7 @@ export async function monitorOrderStatus(
       await sleep(1000);
     }
 
-    const statusResponse = await sdk.getOrderStatus(hash);
+    const statusResponse = await getOrderStatus(hash);
     console.log("Final order status:", statusResponse);
     return statusResponse;
   } catch (error) {
