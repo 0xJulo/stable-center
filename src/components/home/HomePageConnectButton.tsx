@@ -54,8 +54,8 @@ export default function HomePageConnectButton() {
                     type="button"
                     className="bg-light-green hover:bg-light-green/90 text-[#051419] font-medium py-3 px-6 rounded-lg transition-colors flex items-center gap-2"
                   >
+                    <span className="text-[1rem]">Get started</span>
                     <ArrowRight className="w-4 h-4" />
-                    Connect Wallet
                   </button>
                 );
               }

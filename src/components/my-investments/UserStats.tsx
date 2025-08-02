@@ -77,7 +77,7 @@ export default function UserStats() {
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[300px] w-full min-w-0"
+          className="aspect-auto h-[400px] w-full min-w-0"
         >
           <ComposedChart data={filteredData}>
             <defs>

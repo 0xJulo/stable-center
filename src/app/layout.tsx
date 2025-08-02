@@ -4,6 +4,7 @@ import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Web3Provider } from "@/components/global/Web3Provider";
 import Header from "@/components/global/Header";
+import Footer from "@/components/global/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <Web3Provider>
           <Header />
           {children}
+          <Footer />  
         </Web3Provider>
       </body>
     </html>

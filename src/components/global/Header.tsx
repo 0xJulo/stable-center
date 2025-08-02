@@ -13,16 +13,16 @@ export default function Header() {
   const isHomePage = pathname === "/";
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 2.8 }}
-      className="fixed top-0 z-10 w-full flex justify-between items-center p-4 bg-[#051419e6] backdrop-blur-sm"
+    <header
+      // initial={{ opacity: 0, y: -10 }}
+      // animate={{ opacity: 1, y: 0 }}
+      // transition={{ duration: 0.8, delay: 2.8 }}
+      className="fixed top-0 z-50 w-full flex justify-between items-center p-4 bg-gradient-to-b from-[#05141980] to-transparent backdrop-blur-sm opacity-80"
     >
-      <div className="flex items-end gap-8">
+      <div className="flex items-center gap-8">
         <Link href="/">
-          <h1 className="text-white hover:text-light-green text-2xl font-bold cursor-pointer">
-            StableCenter
+          <h1 className="text-white hover:text-light-green text-2xl font-medium cursor-pointer">
+            Stable<span className="font-bold">Center</span>
           </h1>
         </Link>
         {isHomePage && (
@@ -34,28 +34,16 @@ export default function Header() {
               How it works
             </Link>
             <Link
-              href="#top-investments"
-              className="text-white hover:text-light-green"
-            >
-              Top Investments
-            </Link>
-            <Link
               href="#what-are-stabelcoins"
               className="text-white hover:text-light-green"
             >
-              What are stablecoins?
-            </Link>
-            <Link
-              href="#why-defi"
-              className="text-white hover:text-light-green"
-            >
-              Why invest in DeFi?
+              Why invest in stablecoins?
             </Link>
             <Link
               href="#all-investments"
               className="text-white hover:text-light-green"
             >
-              All Investments
+              All investments
             </Link>
           </nav>
         )}
@@ -68,6 +56,6 @@ export default function Header() {
         )}
         <CustomConnectButton />
       </div>
-    </motion.header>
+    </header>
   );
 }
