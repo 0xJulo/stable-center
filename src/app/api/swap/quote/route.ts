@@ -19,9 +19,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${
-        process.env.BACKEND_URL || "http://localhost:3001"
-      }/api/swap/quote?${searchParams.toString()}`
+      `https://stable-center-backend-production.up.railway.app/api/swap/quote?${searchParams.toString()}`
     );
 
     if (!response.ok) {

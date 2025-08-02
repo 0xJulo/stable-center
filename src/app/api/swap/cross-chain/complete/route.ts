@@ -16,9 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${
-        process.env.BACKEND_URL || "http://localhost:3001"
-      }/api/swap/cross-chain/complete`,
+      `https://stable-center-backend-production.up.railway.app/api/swap/cross-chain/complete`,
       {
         method: "POST",
         headers: {
