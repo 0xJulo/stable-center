@@ -72,7 +72,7 @@ export function usePortfolioTokens({
         });
 
         const response = await fetch(
-          `http://localhost:3001/api/defi/portfolio/tokens?${params}`
+          `https://stable-center-backend-production.up.railway.app/api/defi/portfolio/tokens?${params}`
         );
         const result = await response.json();
 
