@@ -168,10 +168,28 @@ export function useMorphoInvestment(
       tokenAddress
   );
 
+  console.log("🔍 Morpho hook debug:", {
+    amount,
+    amountType: typeof amount,
+    amountLength: amount?.length,
+    isAmountTruthy: !!amount,
+    isAmountNumber: !isNaN(Number(amount)),
+    isAmountPositive: Number(amount) > 0,
+    address,
+    vaultAddress,
+    tokenAddress,
+    isValidAmount,
+    chainId: chain?.id,
+    isBaseChain: chain?.id === 8453,
+  });
+
   // Get user's token balance
   const { data: balanceData } = useBalance({
     address,
     token: tokenAddress as `0x${string}`,
+    query: {
+      enabled: !!address && chain?.id === 8453,
+    },
   });
 
   // Check allowance
@@ -181,7 +199,7 @@ export function useMorphoInvestment(
     functionName: "allowance",
     args: [address as `0x${string}`, vaultAddress as `0x${string}`],
     query: {
-      enabled: isValidAmount && !!address,
+      enabled: isValidAmount && !!address && chain?.id === 8453,
     },
   });
 
@@ -190,9 +208,11 @@ export function useMorphoInvestment(
     address: tokenAddress as `0x${string}`,
     abi: ERC20_ABI,
     functionName: "approve",
-    args: [vaultAddress as `0x${string}`, parseUnits(amount, decimals)],
+    args: isValidAmount
+      ? [vaultAddress as `0x${string}`, parseUnits(amount, decimals)]
+      : undefined,
     query: {
-      enabled: isValidAmount && !!address,
+      enabled: isValidAmount && !!address && chain?.id === 8453,
     },
   });
 
@@ -201,9 +221,11 @@ export function useMorphoInvestment(
     address: vaultAddress as `0x${string}`,
     abi: MORPHO_VAULT_ABI,
     functionName: "deposit",
-    args: [parseUnits(amount, decimals), address as `0x${string}`],
+    args: isValidAmount
+      ? [parseUnits(amount, decimals), address as `0x${string}`]
+      : undefined,
     query: {
-      enabled: isValidAmount && !!address,
+      enabled: isValidAmount && !!address && chain?.id === 8453,
     },
   });
 
@@ -231,18 +253,32 @@ export function useMorphoInvestment(
 
   // Calculate if approval is needed
   const needsApproval =
-    allowanceData && parseUnits(amount, decimals) > (allowanceData as bigint);
+    isValidAmount &&
+    allowanceData &&
+    parseUnits(amount, decimals) > (allowanceData as bigint);
 
   // Helper functions
   const approve = () => {
+    console.log("🔐 Morpho approve() called");
+    console.log("🔐 approveSimulation:", approveSimulation);
+    console.log("🔐 approveSimulation?.request:", approveSimulation?.request);
     if (approveSimulation?.request) {
+      console.log("🔐 Calling writeApprove with:", approveSimulation.request);
       writeApprove(approveSimulation.request);
+    } else {
+      console.log("🔐 No approveSimulation.request available");
     }
   };
 
   const deposit = () => {
+    console.log("💰 Morpho deposit() called");
+    console.log("💰 depositSimulation:", depositSimulation);
+    console.log("💰 depositSimulation?.request:", depositSimulation?.request);
     if (depositSimulation?.request) {
+      console.log("💰 Calling writeDeposit with:", depositSimulation.request);
       writeDeposit(depositSimulation.request);
+    } else {
+      console.log("💰 No depositSimulation.request available");
     }
   };
 
@@ -280,6 +316,10 @@ export function useMorphoInvestment(
     // Transaction hashes
     approveHash,
     depositHash,
+
+    // Debug info
+    approveSimulation,
+    depositSimulation,
   };
 }
 

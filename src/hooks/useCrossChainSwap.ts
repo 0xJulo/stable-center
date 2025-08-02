@@ -298,10 +298,35 @@ export function useCrossChainSwap() {
   useEffect(() => {
     if (isSuccessDeposit && hashDeposit) {
       console.log("✅ Deposit completed successfully!");
-      updateProgress(100, "Investment completed successfully!");
+      updateProgress(100, `Investment completed successfully!`);
       completeInvestment(hashDeposit);
+
+      // Store the investment data for the my-investments page
+      const investmentData = {
+        id: Date.now().toString(),
+        type: "morpho",
+        amount: amount,
+        asset: "USDC",
+        txHash: hashDeposit,
+        timestamp: new Date().toISOString(),
+        status: "active",
+        vaultAddress: MORPHO_VAULT_ADDRESS,
+        chainId: 8453,
+      };
+
+      // Store in localStorage for demo purposes
+      const existingInvestments = JSON.parse(
+        localStorage.getItem("morphoInvestments") || "[]"
+      );
+      existingInvestments.push(investmentData);
+      localStorage.setItem(
+        "morphoInvestments",
+        JSON.stringify(existingInvestments)
+      );
+
+      console.log("💾 Investment data stored:", investmentData);
     }
-  }, [isSuccessDeposit, hashDeposit]);
+  }, [isSuccessDeposit, hashDeposit, amount]);
 
   // Handle approval errors
   useEffect(() => {
@@ -355,7 +380,7 @@ export function useCrossChainSwap() {
       // Step 1: Submit cross-chain swap order (includes quote and monitoring internally)
       updateProgress(
         20,
-        "Executing cross-chain swap. This may take around 1 m..."
+        "Executing cross-chain swap. This may take around 50 seconds..."
       );
       console.log("🔄 Submitting cross-chain swap order...");
 
@@ -388,7 +413,7 @@ export function useCrossChainSwap() {
 
       // Step 2: Switch to Base chain after successful swap (only if not already on Base)
       if (currentChainId !== 8453) {
-        updateProgress(60, "Switching to Base network...");
+        updateProgress(10, "Switching to Base network...");
         console.log("🔄 Switching to Base chain...");
         setIsChainSwitching(true);
 
@@ -445,7 +470,7 @@ export function useCrossChainSwap() {
       }
 
       console.log("✅ Successfully on Base chain");
-      updateProgress(85, "Preparing Morpho investment...");
+      updateProgress(25, "Preparing Morpho investment...");
 
       // Longer delay to allow simulations to re-run on Base chain
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -574,7 +599,7 @@ export function useCrossChainSwap() {
       ...prev,
       status: "complete",
       progress: 100,
-      message: "Investment completed successfully!",
+      message: `Investment completed successfully!`,
       depositHash: investmentHash,
     }));
   };

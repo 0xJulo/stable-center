@@ -17,13 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowDown, Info, Loader2 } from "lucide-react";
+import { ArrowDown, Info, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { useCrossChainSwap } from "@/hooks/useCrossChainSwap";
 import { useMorphoInvestment } from "@/lib/morpho-utils";
+import { useRouter } from "next/navigation";
 
 // These props determine which view the user sees
 // The component is then structure based off this initial type prop.
@@ -38,9 +39,9 @@ interface InvestmentInteractionProps {
 function InvestHeader() {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="leading-none">Invest in (name) by (investment name)</h3>
+      <h3 className="leading-none">Invest in USDC by Morpho Steakhouse USDC</h3>
       <div className="flex flex-row text-light-green gap-4">
-        <p className="text-[0.8rem]">Estimated APY: (7.07%)</p>
+        <p className="text-[0.8rem]">Estimated APY: (10.27%)</p>
         <p className="text-[0.8rem]">Platform: (Morpho)</p>
         <p className="text-[0.8rem]">Network: (Base)</p>
         <p className="text-[0.8rem]">Asset: (USDC)</p>
@@ -100,6 +101,8 @@ function ClaimRewards() {
 
 // Progress component for cross-chain swap
 function SwapProgress({ swapState }: { swapState: any }) {
+  const router = useRouter();
+
   if (swapState.status === "idle") return null;
 
   return (
@@ -108,19 +111,15 @@ function SwapProgress({ swapState }: { swapState: any }) {
         <div className="flex items-center gap-2">
           {swapState.status === "error" ? (
             <Info className="w-4 h-4 text-red-400" />
+          ) : swapState.status === "complete" ? (
+            <CheckCircle className="w-4 h-4 text-light-green" />
           ) : (
             <Loader2 className="w-4 h-4 text-light-green animate-spin" />
           )}
           <p className="text-white text-sm font-medium">{swapState.message}</p>
         </div>
 
-        <Progress
-          value={swapState.progress}
-          max={100}
-          showSpinner={
-            swapState.status === "swapping" || swapState.status === "investing"
-          }
-        />
+        <Progress value={swapState.progress} max={100} showSpinner={false} />
 
         {swapState.error && (
           <p className="text-red-400 text-sm">{swapState.error}</p>
@@ -131,6 +130,32 @@ function SwapProgress({ swapState }: { swapState: any }) {
             Swap Hash: {swapState.swapHash.slice(0, 10)}...
             {swapState.swapHash.slice(-8)}
           </p>
+        )}
+
+        {swapState.depositHash && (
+          <p className="text-gray-400 text-xs">
+            Transaction Hash:{" "}
+            <a
+              href={`https://basescan.org/tx/${swapState.depositHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-light-green hover:underline"
+            >
+              {swapState.depositHash.slice(0, 10)}...
+              {swapState.depositHash.slice(-8)}
+            </a>
+          </p>
+        )}
+
+        {swapState.status === "complete" && (
+          <div className="flex gap-2 mt-2">
+            <Button
+              onClick={() => router.push("/my-investments")}
+              className="text-sm bg-light-green text-black font-medium py-2 px-4 cursor-pointer hover:bg-opacity-90"
+            >
+              View My Investments
+            </Button>
+          </div>
         )}
       </div>
     </Card>
@@ -237,7 +262,7 @@ function InvestSteps({
       </div>
       <Card className="bg-[#102E37] border border-[#B5CAA9/20] gap-4 items-center p-3">
         <p className="text-white text-1rem">
-          Earn with MEV Capital (7.07%) on Base
+          Earn with Morpho Steakhouse (10.27%) on Base
         </p>
       </Card>
     </div>
@@ -300,6 +325,15 @@ function InvestLayout() {
 
   // Determine button state and text
   const getButtonState = () => {
+    if (swapState.status === "complete") {
+      return {
+        text: "Investment Complete!",
+        loading: false,
+        disabled: true,
+        onClick: undefined,
+      };
+    }
+
     if (hasError) {
       return {
         text: "Retry",
@@ -373,7 +407,7 @@ function WithdrawSection() {
       <div className="flex flex-col gap-4 mt-2">
         <Card className="bg-[#102E37] border border-[#B5CAA9/20] gap-4 items-center p-3">
           <p className="text-white text-1rem">
-            Earn with MEV Capital (7.07%) on Base
+            Earn with Morpho Steakhouse (10.27%) on Base
           </p>
         </Card>
         <div className="flex justify-center">

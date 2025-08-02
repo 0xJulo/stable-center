@@ -5,7 +5,9 @@ import OpenInvestmentCard from "@/components/my-investments/OpenInvestmentCard";
 import { getOpenInvestmentData, OpenInvestmentData } from "@/lib/open-data";
 
 export default function OpenInvestments() {
-  const [openInvestments, setOpenInvestments] = useState<OpenInvestmentData[]>([]);
+  const [openInvestments, setOpenInvestments] = useState<OpenInvestmentData[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +27,10 @@ export default function OpenInvestments() {
 
   if (loading) {
     return (
-      <section id="open-investments" className="flex flex-col gap-4 items-start w-full py-24">
+      <section
+        id="open-investments"
+        className="flex flex-col gap-4 items-start w-full py-24"
+      >
         <h2>Open investments</h2>
         <p className="text-white">Loading open investments...</p>
       </section>
@@ -33,7 +38,10 @@ export default function OpenInvestments() {
   }
 
   return (
-    <section id="open-investments" className="flex flex-col gap-4 items-start w-full py-24">
+    <section
+      id="open-investments"
+      className="flex flex-col gap-4 items-start w-full py-24"
+    >
       <h2>Open investments</h2>
       <div className="w-full grid grid-cols-[1fr_1.1fr_0.9fr_0.8fr_1fr_1fr_1fr_2.6fr] gap-4 items-start p-3">
         <p className="text-white text-[1rem]">APY</p>
@@ -55,6 +63,9 @@ export default function OpenInvestments() {
             risk={investment.risk}
             totalRewards={investment.totalRewards}
             unclaimedRewards={investment.unclaimedRewards}
+            txHash={investment.txHash}
+            timestamp={investment.timestamp}
+            type={investment.type}
           />
         ))}
       </div>
