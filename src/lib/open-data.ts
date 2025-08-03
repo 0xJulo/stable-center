@@ -78,6 +78,7 @@ export async function getOpenInvestmentData(): Promise<OpenInvestmentData[]> {
 
       // Convert Morpho investments to the expected format
       const morphoData: OpenInvestmentData[] = morphoInvestments.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (investment: any) => ({
           apr: 10.27, // Mock APY for Morpho
           name: "Morpho",

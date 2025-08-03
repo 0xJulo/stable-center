@@ -5,6 +5,7 @@ interface InvestmentCardData {
   risk: string;
   estimatedFees: number;
   chain: string;
+  isReal?: boolean; // true for working investments, false/undefined for demo
 }
 
 const mockInvestmentData: InvestmentCardData[] = [
@@ -15,6 +16,7 @@ const mockInvestmentData: InvestmentCardData[] = [
     risk: "Low",
     estimatedFees: 0.5,
     chain: "Base",
+    isReal: true, // This one actually works
   },
   {
     apr: 4.5,

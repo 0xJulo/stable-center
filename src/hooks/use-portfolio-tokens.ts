@@ -32,6 +32,7 @@ interface TokenSnapshot {
   asset_sign: number;
   status: number;
   underlying_tokens: UnderlyingToken[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reward_tokens: any[];
   value_usd: number;
   locked: boolean;

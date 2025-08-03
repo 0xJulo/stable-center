@@ -100,6 +100,7 @@ function ClaimRewards() {
 }
 
 // Progress component for cross-chain swap
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SwapProgress({ swapState }: { swapState: any }) {
   const router = useRouter();
 
@@ -218,6 +219,7 @@ function InvestSteps({
   setAmount: (value: string) => void;
   selectedAsset: string;
   setSelectedAsset: (value: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   swapState: any;
 }) {
   return (

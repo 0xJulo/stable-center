@@ -66,8 +66,8 @@ export default function OpenInvestmentCard({
           ) : (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="font-medium py-[1.5rem] px-[2rem] text-[1rem] bg-light-green cursor-pointer">
-                  Manage
+                <Button className="font-medium py-[1.5rem] px-[2rem] text-[1rem] bg-blue-500 cursor-pointer">
+                  Manage Example
                 </Button>
               </DialogTrigger>
               <DialogPortal>

@@ -1,6 +1,5 @@
 import HowItWorks from "@/components/home/HowItWorks";
 import Hero from "@/components/home/Hero";
-import TopInvestments from "@/components/global/TopInvestments";
 import AllInvestments from "@/components/global/AllInvestments";
 import StablecoinExplainer from "@/components/home/StablecoinExplainer";
 
@@ -11,7 +10,6 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-start">
         <Hero />
         <HowItWorks />
-        {/* <TopInvestments id="top-investments" /> */}
         <StablecoinExplainer />
         <AllInvestments id="all-investments" />
       </main>

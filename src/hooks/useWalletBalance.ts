@@ -80,8 +80,8 @@ export function useWalletBalance() {
         const decimalsResult = contractResults[i * 2 + 1]
         
         if (balanceResult.status === 'success' && decimalsResult.status === 'success') {
-          const balance = balanceResult.result as bigint
-          const decimals = decimalsResult.result as number
+          const balance = balanceResult.result as unknown as bigint
+          const decimals = decimalsResult.result as unknown as number
           
           // Convert balance to USD (assuming 1:1 peg for stablecoins)
           if (balance > 0n) {

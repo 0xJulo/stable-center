@@ -77,6 +77,7 @@ export default function AllInvestments({ id, manage }: { id: string; manage?: bo
             risk={investment.risk}
             estimatedFees={investment.estimatedFees}
             chain={investment.chain}
+            isReal={investment.isReal}
           />
         ))}
       </div>

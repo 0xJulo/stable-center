@@ -21,6 +21,7 @@ interface InvestmentCardProps {
   risk: string;
   estimatedFees: number;
   chain: string;
+  isReal?: boolean;
 }
 
 export default function InvestmentCard({
@@ -30,6 +31,7 @@ export default function InvestmentCard({
   risk,
   estimatedFees,
   chain,
+  isReal = false,
 }: InvestmentCardProps) {
   const { isConnected } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,20 +45,29 @@ export default function InvestmentCard({
       <p className="text-white text-[1.25rem]">${estimatedFees}</p>
       {isConnected ? (
         <div className="flex flex-row gap-2 justify-end">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="font-medium py-[1.5rem] px-[2rem] text-[1rem] bg-light-green cursor-pointer">
-                Invest
-              </Button>
-            </DialogTrigger>
-            <DialogPortal>
-              <DialogOverlay className="bg-black/80" />
-              <DialogContent className="!max-w-[10rem] sm:!max-w-[40rem] bg-[#102E37]">
-                <DialogTitle className="sr-only">Investment Dialog</DialogTitle>
-                <InvestmentInteraction type="invest" />
-              </DialogContent>
-            </DialogPortal>
-          </Dialog>
+          {isReal ? (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="font-medium py-[1.5rem] px-[2rem] text-[1rem] bg-light-green cursor-pointer">
+                  Invest
+                </Button>
+              </DialogTrigger>
+              <DialogPortal>
+                <DialogOverlay className="bg-black/80" />
+                <DialogContent className="!max-w-[10rem] sm:!max-w-[40rem] bg-[#102E37]">
+                  <DialogTitle className="sr-only">Investment Dialog</DialogTitle>
+                  <InvestmentInteraction type="invest" />
+                </DialogContent>
+              </DialogPortal>
+            </Dialog>
+          ) : (
+            <Button 
+              disabled 
+              className="font-medium py-[1.5rem] px-[2rem] text-[1rem] bg-gray-500 text-gray-300 cursor-not-allowed opacity-50"
+            >
+              Coming Soon
+            </Button>
+          )}
         </div>
       ) : (
         <p className="text-white text-center">Login to invest</p>

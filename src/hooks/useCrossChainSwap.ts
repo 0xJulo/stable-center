@@ -427,6 +427,7 @@ export function useCrossChainSwap() {
           while (!isOnBase && chainSwitchAttempts < 15) {
             try {
               // Check chain directly from wallet
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const chainIdFromWallet = await (window as any).ethereum.request({
                 method: "eth_chainId",
               });
@@ -479,6 +480,7 @@ export function useCrossChainSwap() {
       console.log("💰 Starting Morpho investment process...");
 
       // Check allowance for Morpho vault
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allowance = await (window as any).ethereum.request({
         method: "eth_call",
         params: [
